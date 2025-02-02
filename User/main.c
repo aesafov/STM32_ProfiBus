@@ -16,6 +16,10 @@
 
 
 /* Private functions ---------------------------------------------------------*/
+void GPIO_Config(void);
+uint32_t read_fpga(uint32_t addr);
+void write_fpga(uint32_t addr,uint32_t data);
+
 
 /**
   * @brief   Main program
@@ -24,11 +28,49 @@
   */
 int main(void)
 {       
-  while(1)
-  {}
+    GPIO_Config();
+    
+    while(1)
+    {}
 }
-
-
+//-----------------------------------------------------------------------------
+uint32_t read_fpga(uint32_t addr)
+{
+    uint32_t data;
+    uint32_t reg;
+    
+    return data;
+}
+//-----------------------------------------------------------------------------
+void write_fpga(uint32_t addr,uint32_t data)
+{
+    
+}
+//-----------------------------------------------------------------------------
+void GPIO_Config(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+    
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOF, ENABLE);
+    
+    // PF0..PF5 - adr0..adr5
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+    
+    // PF0..PF7 - data0..dara7
+    // PF8 - ?
+    // PF12 - ?
+    // PF13 - ?
+    // PF14 - ?
+    // PF15 - ?
+	/*GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOА, &GPIO_InitStructure);*/
+}
+//-----------------------------------------------------------------------------
 #ifdef  USE_FULL_ASSERT
 
 /**

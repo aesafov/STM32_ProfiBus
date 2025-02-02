@@ -1,0 +1,32 @@
+--- MCU -- <-> -- FPGA ---
+PD0 (adr0) <-> pin 38
+PD1 (adr1) <-> pin 39
+PD2 (adr2) <-> pin 42
+PD3 (adr3) <-> pin 43
+PD4 (adr4) <-> pin 44
+PD5 (adr5) <-> pin 46
+
+PF0 (data0) <-> pin 125
+PF1 (data1) <-> pin 124
+PF2 (data2) <-> pin 127
+PF3 (data3) <-> pin 126
+PF4 (data4) <-> pin 129
+PF5 (data5) <-> pin 128
+PF6 (data6) <-> pin 133
+PF7 (data7) <-> pin 132
+
+PF12 <-> pin 141
+PF13 <-> pin 143
+PF14 <-> pin 144
+PF15 <-> pin 1
+
+-----------------------------------
+synchro -> pin 119
+VD1     -> pin 33
+VD2     -> pin 34
+VD3     -> pin 31
+VD4     -> pin 32
+VD5     -> pin 142
+VD6     -> pin 138
+VD7     -> pin 137
+VD8     -> pin 135

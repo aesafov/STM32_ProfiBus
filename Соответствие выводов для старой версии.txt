@@ -5,6 +5,8 @@ PD2 (adr2) <-> pin 42
 PD3 (adr3) <-> pin 43
 PD4 (adr4) <-> pin 44
 PD5 (adr5) <-> pin 46
+Px? (adr6) <-> pin ?
+Px? (adr7) <-> pin ?
 
 PF0 (data0) <-> pin 125
 PF1 (data1) <-> pin 124
@@ -16,9 +18,9 @@ PF6 (data6) <-> pin 133
 PF7 (data7) <-> pin 132
 
 PF12 <-> pin 141
-PF13 <-> pin 143
-PF14 <-> pin 144
-PF15 <-> pin 1
+PF13 (WR) <-> pin 143
+PF14 (RD) <-> pin 144
+PF15 (CS) <-> pin 1
 
 -----------------------------------
 synchro -> pin 119
@@ -30,3 +32,12 @@ VD5     -> pin 142
 VD6     -> pin 138
 VD7     -> pin 137
 VD8     -> pin 135
+-----------------------------------
+address_sram[0]
+address_sram[]
+address_sram[]
+address_sram[]
+address_sram[]
+address_sram[]
+address_sram[]
+address_sram[]

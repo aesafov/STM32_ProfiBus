@@ -7,12 +7,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define nWR_Pin GPIO_Pin_13
-#define nRD_Pin GPIO_Pin_14
-#define nCS_Pin GPIO_Pin_15
+#define nRD_Pin GPIO_Pin_8
+#define nWR_Pin GPIO_Pin_9
+#define nCS_Pin GPIO_Pin_10
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-#define COUNT_READ 60
+#define COUNT_READ 55
 uint32_t fpga_data[COUNT_READ];
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,12 +58,19 @@ uint32_t read_fpga(uint32_t addr)
 	
 	// set address to read
 	// Установить адрес для чтения
-	GPIOD->ODR &= ~(0x0000003F);
-	GPIOD->ODR |= (addr & 0x0000003F);
+	GPIOD->ODR &= ~(0x0000000F);
+	GPIOD->ODR |= (addr & 0x0000000F);
+    // старшие 2 бита адреса запихиваем в PE7 и PE8
+    addr = addr << 3;
+    GPIOE->ODR &= ~(0x00000180);
+	GPIOE->ODR |= (addr & 0x00000180);
+    for(uint32_t i = 0; i <= COUNT_READ; i++) { __NOP(); }	
 	
 	GPIOF->BSRR |= (nRD_Pin << 16); // Установить в "0" вывод чтения
 	GPIOF->BSRR |= (nCS_Pin << 16); // Установить в "0" вывод выбора чипа
 	
+    for(uint32_t i = 0; i <= COUNT_READ; i++) { __NOP(); }	
+    
 	data = (GPIOF->IDR & 0x000000FF);
 	
 	GPIOF->BSRR |= (nRD_Pin | nCS_Pin); // Установить в "1" вывод чтения и вывод выбора чипа
@@ -85,27 +92,42 @@ void GPIO_Config(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOF, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOF, ENABLE);
     
-    // PD0..PD5 - adr0..adr5
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5;
+    // PD0..PD3 - adr0..adr3
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
     
+    // set address bit as "0"
+	GPIOD->ODR &= ~(0x0000000F);
+    
+    // PE7 - adr4
+    // PE8 - adr5
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
+    
+    // set address bit as "0"
+	GPIOE->ODR &= ~(GPIO_Pin_7 | GPIO_Pin_8);
+    
     // PF0..PF7 - data0..dara7
-    // PF8 - ?
-    // PF12 - ?
-    // PF13 - nWR, active level "0"
-    // PF14 - nRD, active level "0"
-    // PF15 - nCS, active level "0"
+    // PF8 - nRD, active level "0"
+    // PF9 - nWR, active level "0"
+    // PF10 - nCS, active level "0"
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_Init(GPIOF, &GPIO_InitStructure);
+    
+    // set data bit as "0"
+	GPIOF->ODR &= ~(0x000000FF);
+    
 	
 	// Выводы nCS, nRD и nWR как выход и "1" по умолчанию
-	GPIO_WriteBit(GPIOF, GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15, Bit_SET);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_WriteBit(GPIOF, GPIO_Pin_8 | GPIO_Pin_9 |  GPIO_Pin_10, Bit_SET);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 |  GPIO_Pin_10;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOF, &GPIO_InitStructure);

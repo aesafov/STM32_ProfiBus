@@ -46,6 +46,8 @@ int main(void)
 		{
 			fpga_data[i] = 0;
 		}
+        
+        write_fpga(16, 0xFF);
 	}
 }
 //-----------------------------------------------------------------------------
@@ -78,7 +80,7 @@ uint32_t read_fpga(uint32_t addr)
     return data;
 }
 //-----------------------------------------------------------------------------
-void write_fpga(uint32_t addr,uint32_t data)
+void write_fpga(uint32_t addr, uint32_t data)
 {
     // set data ports as input
 	// Установить порты данных как вход
@@ -86,13 +88,40 @@ void write_fpga(uint32_t addr,uint32_t data)
 //	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 //	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 //	GPIO_Init(GPIOF, &GPIO_InitStructure);
+    
+    // set address to write
+	// Установить адрес для записи
+	GPIOD->ODR &= ~(0x0000000F);
+	GPIOD->ODR |= (addr & 0x0000000F);
+    // старшие 2 бита адреса запихиваем в PE7 и PE8
+    addr = addr << 3;
+    GPIOE->ODR &= ~(0x00000180);
+	GPIOE->ODR |= (addr & 0x00000180);
+    for(uint32_t i = 0; i <= COUNT_READ; i++) { __NOP(); }
+    
+    GPIOF->ODR &= ~(0x000000FF);
+    GPIOF->ODR |= (uint8_t)data;
+    
+    GPIOF->BSRR |= (nWR_Pin << 16); // Установить в "0" вывод записи
+	GPIOF->BSRR |= (nCS_Pin << 16); // Установить в "0" вывод выбора чипа
+	
+    for(uint32_t i = 0; i <= COUNT_READ; i++) { __NOP(); }
+    
+    GPIOF->BSRR |= (nWR_Pin | nCS_Pin); // Установить в "1" вывод чтения и вывод выбора чипа
 }
 //-----------------------------------------------------------------------------
 void GPIO_Config(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
     
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOF, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_GPIOF, ENABLE);
+    
+    // PB14 - светодиод State
+    // PB15 - светодиод Link
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
     
     // PD0..PD3 - adr0..adr3
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;

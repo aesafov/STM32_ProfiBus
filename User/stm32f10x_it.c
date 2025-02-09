@@ -23,6 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
+#include "mb.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Examples
   * @{
@@ -42,6 +43,16 @@
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
+
+void TIM6_IRQHandler( void )
+{
+    if ( TIM_GetITStatus( TIM6, TIM_IT_Update ) != RESET )
+    {
+        TIM_ClearITPendingBit( TIM6, TIM_IT_Update );
+
+        (void) pxMBPortCBTimerExpired();
+    }
+}
 
 /**
   * @brief  This function handles NMI exception.

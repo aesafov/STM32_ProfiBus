@@ -1,15 +1,22 @@
 /**
+Настройка Modbus RTU взята отсюда:
+https://ctrl-v.biz/ru/blog/stm32f4discovery-modbus-rtu-ascii-mems-lis302dl
+
 
 **/ 
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x.h"
-
+#include "mb.h"
+#include "mbport.h"
+#include "mbcrc.h"
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define nRD_Pin GPIO_Pin_8
 #define nWR_Pin GPIO_Pin_9
 #define nCS_Pin GPIO_Pin_10
+
+
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 #define COUNT_READ 55
@@ -23,6 +30,13 @@ void GPIO_Config(void);
 uint32_t read_fpga(uint32_t addr);
 void write_fpga(uint32_t addr,uint32_t data);
 
+/* ModBus --------------------------------------------------------------------*/
+#define REG_HOLDING_START   40001
+#define REG_HOLDING_NREGS   4
+
+static USHORT   usRegHoldingStart = REG_HOLDING_START;
+static USHORT   usRegHoldingBuf[REG_HOLDING_NREGS];
+/* ---------------------------------------------------------------------------*/
 
 /**
   * @brief   Main program
@@ -33,8 +47,21 @@ int main(void)
 {       
     GPIO_Config();
     
+    eMBErrorCode eStatus;
+	
+	eStatus = eMBInit( MB_RTU,
+                        0x0A,           /* адрес slave-устройства */
+                        0,
+                        9600,           /* скорость обмена */
+                        MB_PAR_NONE     /* без паритета */
+                     );
+	
+	eStatus = eMBEnable();
+
     while(1)
     {
+        (void) eMBPoll();
+        
 		for(uint32_t i = 0; i <= COUNT_READ; i++)
 		{
 			fpga_data[i] = read_fpga(i);
@@ -49,6 +76,71 @@ int main(void)
         
         write_fpga(16, 0xFF);
 	}
+}
+//-----------------------------------------------------------------------------
+eMBErrorCode eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs, eMBRegisterMode eMode )
+{
+    eMBErrorCode    eStatus = MB_ENOERR;
+    int             iRegIndex;
+
+    if( ( usAddress >= REG_HOLDING_START ) &&
+        ( usAddress + usNRegs <= REG_HOLDING_START + REG_HOLDING_NREGS ) )
+    {
+        iRegIndex = ( int )( usAddress - usRegHoldingStart );
+
+        switch ( eMode )
+        {
+        case MB_REG_READ:
+            while( usNRegs > 0 )
+            {
+                *pucRegBuffer++ = ( UCHAR ) ( usRegHoldingBuf[iRegIndex] >> 8 );
+                *pucRegBuffer++ = ( UCHAR ) ( usRegHoldingBuf[iRegIndex] & 0xFF );
+                iRegIndex++;
+                usNRegs--;
+            }
+            break;
+        case MB_REG_WRITE:
+            while( usNRegs > 0 )
+            {
+                usRegHoldingBuf[iRegIndex] = *pucRegBuffer++ << 8;
+                usRegHoldingBuf[iRegIndex] |= *pucRegBuffer++;
+                iRegIndex++;
+                usNRegs--;
+            }
+            break;
+        }
+    }
+    else
+    {
+        eStatus = MB_ENOREG;
+    }
+    return eStatus;
+}
+//-----------------------------------------------------------------------------
+eMBErrorCode eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNRegs )
+{
+    return MB_ENOREG;
+}
+//-----------------------------------------------------------------------------
+eMBErrorCode eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNCoils, eMBRegisterMode eMode )
+{
+    return MB_ENOREG;
+}
+//-----------------------------------------------------------------------------
+eMBErrorCode eMBRegDiscreteCB( UCHAR * pucRegBuffer, USHORT usAddress, USHORT usNDiscrete )
+{
+    return MB_ENOREG;
+}
+//-----------------------------------------------------------------------------
+eMBException eMBFuncReportSlaveID( UCHAR * pucFrame, USHORT * usLen )
+{
+    // разобратся, что туту делать!!!!!!!!!!!!!!!!!
+    return MB_EX_NONE;
+}
+//-----------------------------------------------------------------------------
+void vMBPortTimersDelay( USHORT usTimeOutMS )
+{
+    // без ее реализации не компилировалось!!!!!!!!!!!!!!!!!
 }
 //-----------------------------------------------------------------------------
 uint32_t read_fpga(uint32_t addr)
@@ -82,13 +174,6 @@ uint32_t read_fpga(uint32_t addr)
 //-----------------------------------------------------------------------------
 void write_fpga(uint32_t addr, uint32_t data)
 {
-    // set data ports as input
-	// Установить порты данных как вход
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_Init(GPIOF, &GPIO_InitStructure);
-    
     // set address to write
 	// Установить адрес для записи
 	GPIOD->ODR &= ~(0x0000000F);

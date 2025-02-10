@@ -39,8 +39,7 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
      */
 	if( xRxEnable )
     {
-        USART_ITConfig( USART3, USART_IT_RXNE, ENABLE );
-        GPIO_ResetBits(GPIOE, GPIO_Pin_15);
+        USART_ITConfig( USART3, USART_IT_RXNE, ENABLE );        
     }
     else
     {
@@ -49,8 +48,7 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 
     if ( xTxEnable )
     {
-        USART_ITConfig( USART3, USART_IT_TXE, ENABLE );
-        GPIO_SetBits(GPIOE, GPIO_Pin_15);
+        USART_ITConfig( USART3, USART_IT_TXE, ENABLE );        
 
 #ifdef RTS_ENABLE
         RTS_HIGH;
@@ -158,7 +156,16 @@ xMBPortSerialPutByte( CHAR ucByte )
     /* Put a byte in the UARTs transmit buffer. This function is called
      * by the protocol stack if pxMBFrameCBTransmitterEmpty( ) has been
      * called. */
+    
+    // Мои правки
+    GPIO_SetBits(GPIOE, GPIO_Pin_15); // для включения режима передачи
+    // ------------
 	USART_SendData( USART3, (uint16_t) ucByte );
+    
+    // Мои правки
+    GPIO_ResetBits(GPIOE, GPIO_Pin_15); // для включения режима приема
+    // ------------
+    
     return TRUE;
 }
 

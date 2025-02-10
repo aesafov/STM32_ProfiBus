@@ -43,6 +43,20 @@
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
+void USART3_IRQHandler( void )
+{
+    if ( USART_GetITStatus( USART3, USART_IT_RXNE ) != RESET )
+    {
+        USART_ClearITPendingBit( USART3, USART_IT_RXNE );
+        pxMBFrameCBByteReceived();
+
+    }
+    if ( USART_GetITStatus( USART3, USART_IT_TXE ) != RESET )
+    {
+        USART_ClearITPendingBit( USART3, USART_IT_TXE );
+        pxMBFrameCBTransmitterEmpty();
+    }
+}
 
 void TIM6_IRQHandler( void )
 {

@@ -39,14 +39,14 @@ void write_fpga(uint32_t addr,uint32_t data);
 static USHORT   usRegHoldingStart = REG_HOLDING_START;
 static USHORT   usRegHoldingBuf[REG_HOLDING_NREGS];
 /* ---------------------------------------------------------------------------*/
-// Функция для отправки строки через USART
-void USART_SendString(USART_TypeDef *USARTx, uint8_t *data) {
-    while (*data) { // Перебираем символы строки
-        USART_SendData(USARTx, *data); // Отправляем один байт
-        while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET); // Ждем, пока регистр передачи станет пустым
-        data++; // Переходим к следующему символу
-    }
-}
+//// Функция для отправки строки через USART
+//void USART_SendString(USART_TypeDef *USARTx, uint8_t *data) {
+//    while (*data) { // Перебираем символы строки
+//        USART_SendData(USARTx, *data); // Отправляем один байт
+//        while (USART_GetFlagStatus(USARTx, USART_FLAG_TXE) == RESET); // Ждем, пока регистр передачи станет пустым
+//        data++; // Переходим к следующему символу
+//    }
+//}
 /**
   * @brief   Main program
   * @param  None
@@ -56,26 +56,26 @@ int main(void)
 {       
     GPIO_Config();
 	
-    xMBPortSerialInit(3, 9600, 8, MB_PAR_NONE);
-	GPIO_SetBits(GPIOE, GPIO_Pin_15);
-	uint8_t message[] = "Hello, World!\r\n";
-	USART_SendString(USART3, message);
-	GPIO_ResetBits(GPIOE, GPIO_Pin_15);
+//    xMBPortSerialInit(3, 9600, 8, MB_PAR_NONE);
+//	GPIO_SetBits(GPIOE, GPIO_Pin_15);
+//	uint8_t message[] = "Hello, World!\r\n";
+//	USART_SendString(USART3, message);
+//	GPIO_ResetBits(GPIOE, GPIO_Pin_15);
 	
-//    eMBErrorCode eStatus;
-//	
-//	eStatus = eMBInit( MB_RTU,
-//                        0x0A,           /* адрес slave-устройства */
-//                        0,
-//                        9600,           /* скорость обмена */
-//                        MB_PAR_NONE     /* без паритета */
-//                     );
-//	
-//	eStatus = eMBEnable();
+    eMBErrorCode eStatus;
+	
+	eStatus = eMBInit( MB_RTU,
+                        0x0A,           /* адрес slave-устройства */
+                        0,
+                        9600,           /* скорость обмена */
+                        MB_PAR_NONE     /* без паритета */
+                     );
+	
+	eStatus = eMBEnable();
 
     while(1)
     {
-//        (void) eMBPoll();
+        (void) eMBPoll();
         
 		for(uint32_t i = 0; i <= COUNT_READ; i++)
 		{

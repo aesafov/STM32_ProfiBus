@@ -219,10 +219,14 @@ void GPIO_Config(void)
     
     // PE7 - adr4
     // PE8 - adr5
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8;
+	// PE14 - "0" - MPU; "1" - ProfiBus
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8  | GPIO_Pin_14;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	
+	// UART на выход, используем FreeModBus
+	GPIO_ResetBits(GPIOE, GPIO_Pin_14);
     
     // set address bit as "0"
 	GPIOE->ODR &= ~(GPIO_Pin_7 | GPIO_Pin_8);

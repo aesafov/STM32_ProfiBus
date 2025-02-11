@@ -141,7 +141,7 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
 
     USART_Cmd( USART3, ENABLE );
 
-    //vMBPortSerialEnable( TRUE, TRUE );
+//    vMBPortSerialEnable( TRUE, TRUE );
 
 #ifdef RTS_ENABLE
     RTS_INIT;

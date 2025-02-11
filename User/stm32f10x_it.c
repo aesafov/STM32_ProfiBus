@@ -43,12 +43,59 @@
 /******************************************************************************/
 /*            Cortex-M3 Processor Exceptions Handlers                         */
 /******************************************************************************/
+
+#define MODBUS_MAX_FRAME_LENGTH 32 // Максимальная длина пакета
+
+uint8_t modbus_rx_buffer[MODBUS_MAX_FRAME_LENGTH];
+volatile uint8_t modbus_rx_index = 0;
+
 void USART3_IRQHandler( void )
 {
+    // Проверяем, было ли прерывание вызвано ошибкой
+    if (USART_GetITStatus(USART3, USART_IT_ERR) != RESET) 
+	{
+        // Обработка ошибки переполнения (ORE)
+        if (USART_GetFlagStatus(USART3, USART_FLAG_ORE) != RESET) 
+		{
+            USART_ClearFlag(USART3, USART_FLAG_ORE); // Очистка флага ORE
+        }
+
+        // Обработка ошибки шума (NE)
+        if (USART_GetFlagStatus(USART3, USART_FLAG_NE) != RESET) 
+		{
+            USART_ClearFlag(USART3, USART_FLAG_NE); // Очистка флага NE
+        }
+
+        // Обработка ошибки фрейма (FE)
+        if (USART_GetFlagStatus(USART3, USART_FLAG_FE) != RESET) 
+		{
+            USART_ClearFlag(USART3, USART_FLAG_FE); // Очистка флага FE
+        }
+    }
+
+    // Проверка ошибки паритета (PE)
+    if (USART_GetITStatus(USART3, USART_IT_PE) != RESET) 
+	{
+        if (USART_GetFlagStatus(USART3, USART_FLAG_PE) != RESET) 
+		{
+            USART_ClearFlag(USART3, USART_FLAG_PE); // Очистка флага PE
+        }
+        USART_ClearITPendingBit(USART3, USART_IT_PE); // Очистка бита прерывания PE
+    }
+
     if ( USART_GetITStatus( USART3, USART_IT_RXNE ) != RESET )
     {
         USART_ClearITPendingBit( USART3, USART_IT_RXNE );
-        pxMBFrameCBByteReceived();
+//        uint8_t data = USART_ReceiveData(USART3); // Читаем байт
+//        modbus_rx_buffer[modbus_rx_index++] = data; // Сохраняем в буфер
+        modbus_rx_buffer[modbus_rx_index++] = USART_ReceiveData(USART3);		
+		// Проверяем, достигнута ли минимальная длина пакета
+        if (modbus_rx_index >= 8)  // Минимум: адрес + функция + данные + CRC (2 байта)
+		{
+            //ParseModbusPacket(modbus_rx_buffer, modbus_rx_index);
+			__NOP();
+			modbus_rx_index = 0;
+        }
 
     }
     if ( USART_GetITStatus( USART3, USART_IT_TXE ) != RESET )
@@ -57,6 +104,21 @@ void USART3_IRQHandler( void )
         pxMBFrameCBTransmitterEmpty();
     }
 }
+
+//void USART3_IRQHandler( void )
+//{
+//    if ( USART_GetITStatus( USART3, USART_IT_RXNE ) != RESET )
+//    {
+//        USART_ClearITPendingBit( USART3, USART_IT_RXNE );
+//        pxMBFrameCBByteReceived();
+
+//    }
+//    if ( USART_GetITStatus( USART3, USART_IT_TXE ) != RESET )
+//    {
+//        USART_ClearITPendingBit( USART3, USART_IT_TXE );
+//        pxMBFrameCBTransmitterEmpty();
+//    }
+//}
 
 void TIM6_IRQHandler( void )
 {

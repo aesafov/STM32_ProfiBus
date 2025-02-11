@@ -337,7 +337,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,STM32F10X_XD_VL</Define>
+              <Define>USE_STDPERIPH_DRIVER, STM32F10X_HD, HSE_VALUE=12000000</Define>
               <Undefine></Undefine>
               <IncludePath>..\STM32_ProfiBus;.\User;..\..\..\..\..\STM32_Discovery_Kit\STM32VLDiscovery\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\CMSIS\CM3\CoreSupport;..\..\..\..\..\STM32_Discovery_Kit\STM32VLDiscovery\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\CMSIS\CM3\DeviceSupport\ST\STM32F10x;..\..\..\..\..\STM32_Discovery_Kit\STM32VLDiscovery\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\STM32F10x_StdPeriph_Driver\src;..\..\..\..\..\STM32_Discovery_Kit\STM32VLDiscovery\STM32F10x_StdPeriph_Lib_V3.5.0\Libraries\STM32F10x_StdPeriph_Driver\inc;.\modbus\include;.\modbus\rtu;.\modbus\functions;.\port</IncludePath>
             </VariousControls>
